@@ -1,46 +1,21 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Фото Тетрис</title>
+  <title>Кибер Тетрис</title>
   <link rel="stylesheet" href="style.css">
-  <style>
-    #controls {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin: 15px 0;
-    }
-    #controls button {
-      font-size: 24px;
-      padding: 10px 20px;
-      border: none;
-      background: #333;
-      color: white;
-      border-radius: 8px;
-    }
-    #controls button:active {
-      background: #555;
-    }
-  </style>
 </head>
 <body>
-
-  <h1>Фото Тетрис</h1>
-  <p id="score">Фигур: 0</p>
+  <div id="background-logo"></div>
+  <h1>🎮 Кибер Тетрис</h1>
+  <p id="score">Очки: 0</p>
+  <p id="record">Рекорд: 0</p>
   <canvas id="tetris" width="240" height="400"></canvas>
-
-  <!-- КНОПКИ ДЛЯ ТЕЛЕФОНА -->
-  <div id="controls">
-    <button onclick="playerMove(-1)">◀️</button>
-    <button onclick="playerDrop()">⬇️</button>
-    <button onclick="playerMove(1)">▶️</button>
-    <button onclick="playerRotate(1)">🔄</button>
-  </div>
-
-  <button onclick="restartGame()">Сыграть заново</button>
-
+  <button id="restart-btn" onclick="restartGame()">Сыграть снова</button>
+  <p class="hint">Стрелки: ◀️ ▶️ ⬇️  |  Q / W — Поворот</p>
+  <audio id="bg-music" src="music.mp3" loop preload="auto"></audio>
+  <button onclick="toggleMusic()">🎵 Музыка Вкл/Выкл</button>
   <script src="script.js"></script>
 </body>
 </html>
