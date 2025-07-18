@@ -1,0 +1,16 @@
+
+body {
+  margin: 0;
+  background: #fff;
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
+
+canvas {
+  display: block;
+  margin: 20px auto;
+  border: 5px solid #000;
+  background-image: url('photo.jpg');
+  background-size: cover;
+  background-position: center;
+}
