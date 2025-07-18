@@ -3,7 +3,9 @@ const canvas = document.getElementById('tetris');
 const context = canvas.getContext('2d');
 context.scale(20, 20);
 
-let figureCount = 0;
+const colors = [
+  null, 'purple', 'yellow', 'cyan', 'orange', 'blue', 'green', 'red'
+];
 
 function createMatrix(w, h) {
   const matrix = [];
@@ -14,49 +16,36 @@ function createMatrix(w, h) {
 function createPiece(type) {
   if (type === 'T') return [[0,0,0],[1,1,1],[0,1,0]];
   if (type === 'O') return [[2,2],[2,2]];
-  if (type === 'I') return [[3,3,3,3]];
+  if (type === 'I') return [
+    [0,0,0,0],
+    [3,3,3,3],
+    [0,0,0,0],
+    [0,0,0,0]
+  ];
   if (type === 'L') return [[0,4,0],[0,4,0],[0,4,4]];
   if (type === 'J') return [[0,5,0],[0,5,0],[5,5,0]];
   if (type === 'S') return [[0,6,6],[6,6,0],[0,0,0]];
   if (type === 'Z') return [[7,7,0],[0,7,7],[0,0,0]];
 }
 
-const colors = [
-  null,
-  'red',
-  'yellow',
-  'cyan',
-  'orange',
-  'blue',
-  'green',
-  'purple'
-];
-
-function updateScore() {
-  document.getElementById('score').innerText = 'Фигур: ' + figureCount;
-}
-
-function drawMatrix(matrix, offset, fixed=false) {
+function drawMatrix(matrix, offset) {
   matrix.forEach((row, y) => {
     row.forEach((value, x) => {
       if (value !== 0) {
-        if (fixed) {
-          context.clearRect(x + offset.x, y + offset.y, 1, 1);
-        } else {
-          context.fillStyle = colors[value];
-          context.fillRect(x + offset.x, y + offset.y, 1, 1);
-        }
+        context.fillStyle = colors[value];
+        context.fillRect(x + offset.x, y + offset.y, 1, 1);
       }
     });
   });
 }
 
 function draw() {
-  context.fillStyle = '#fff';
+  context.fillStyle = '#000';
   context.fillRect(0, 0, canvas.width, canvas.height);
-
-  drawMatrix(arena, {x:0, y:0}, true);
-  drawMatrix(player.matrix, player.pos, false);
+  drawMatrix(arena, {x:0, y:0});
+  drawMatrix(player.matrix, player.pos);
+  document.getElementById('score').innerText = 'Очки: ' + player.score;
+  document.getElementById('record').innerText = 'Рекорд: ' + player.record;
 }
 
 function merge(arena, player) {
@@ -67,15 +56,6 @@ function merge(arena, player) {
       }
     });
   });
-  figureCount++;
-  updateScore();
-}
-
-function restartGame() {
-  arena.forEach(row => row.fill(0));
-  figureCount = 0;
-  updateScore();
-  playerReset();
 }
 
 function collide(arena, player) {
@@ -92,12 +72,35 @@ function collide(arena, player) {
   return false;
 }
 
+function rotate(matrix, dir) {
+  for (let y = 0; y; y++) {
+    for (let x = 0; x < y; ++x) {
+      [matrix[x][y], matrix[y][x]] = [matrix[y][x], matrix[x][y]];
+    }
+  }
+  if (dir > 0) matrix.forEach(row => row.reverse());
+  else matrix.reverse();
+}
+
+function arenaSweep() {
+  for (let y = arena.length - 1; y >= 0; --y) {
+    if (arena[y].every(value => value !== 0)) {
+      arena.splice(y, 1);
+      arena.unshift(new Array(arena[0].length).fill(0));
+      player.score += 10;
+      dropInterval = Math.max(200, dropInterval - 20);
+    }
+  }
+}
+
 function playerDrop() {
   player.pos.y++;
   if (collide(arena, player)) {
     player.pos.y--;
     merge(arena, player);
     playerReset();
+    arenaSweep();
+    updateScore();
   }
   dropCounter = 0;
 }
@@ -116,7 +119,8 @@ function playerReset() {
   player.pos.x = (arena[0].length / 2 | 0) - (player.matrix[0].length / 2 | 0);
   if (collide(arena, player)) {
     arena.forEach(row => row.fill(0));
-    figureCount = 0;
+    player.score = 0;
+    dropInterval = 1000;
     updateScore();
   }
 }
@@ -124,21 +128,42 @@ function playerReset() {
 function playerRotate(dir) {
   const pos = player.pos.x;
   let offset = 1;
-  const rotated = player.matrix[0].map((_, i) =>
-    player.matrix.map(row => row[i])
-  );
-  if (dir > 0) rotated.forEach(row => row.reverse());
-  else rotated.reverse();
-  player.matrix = rotated;
+  rotate(player.matrix, dir);
   while (collide(arena, player)) {
     player.pos.x += offset;
     offset = -(offset + (offset > 0 ? 1 : -1));
     if (offset > player.matrix[0].length) {
-      player.matrix = rotate(player.matrix, -dir);
+      rotate(player.matrix, -dir);
       player.pos.x = pos;
       return;
     }
   }
+}
+
+function updateScore() {
+  document.getElementById('score').innerText = 'Очки: ' + player.score;
+  if (player.score > player.record) {
+    player.record = player.score;
+    localStorage.setItem('tetris-record', player.record);
+  }
+  document.getElementById('record').innerText = 'Рекорд: ' + player.record;
+}
+
+function toggleMusic() {
+  const music = document.getElementById('bg-music');
+  if (music.paused) {
+    music.play();
+  } else {
+    music.pause();
+  }
+}
+
+function restartGame() {
+  arena.forEach(row => row.fill(0));
+  player.score = 0;
+  dropInterval = 1000;
+  playerReset();
+  updateScore();
 }
 
 let dropCounter = 0;
@@ -165,7 +190,20 @@ document.addEventListener('keydown', event => {
 });
 
 const arena = createMatrix(12, 20);
-const player = { pos: {x: 0, y: 0}, matrix: null };
+const player = {
+  pos: {x: 0, y: 0},
+  matrix: null,
+  score: 0,
+  record: parseInt(localStorage.getItem('tetris-record')) || 0
+};
 
 playerReset();
 update();
+
+const resizeCanvas = () => {
+  const scale = canvas.clientWidth / canvas.width;
+  context.setTransform(scale, 0, 0, scale, 0, 0);
+};
+
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
