@@ -1,0 +1,41 @@
+body {
+    margin: 0;
+    background: #222;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    font-family: Arial, sans-serif;
+}
+canvas {
+    background: #001f3f;
+    box-shadow: 0 0 20px #00f, 0 0 40px #00f, 0 0 60px #00f;
+    border: 2px solid #00f;
+    border: 2px solid #555;
+}
+.controls {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+.controls button {
+    font-size: 18px;
+    margin: 5px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    background: #666;
+    color: white;
+}
+.counter {
+    color: white;
+    font-size: 18px;
+    margin-top: 10px;
+}
+.restart {
+    margin-top: 15px;
+    font-size: 18px;
+    padding: 10px 20px;
+}
